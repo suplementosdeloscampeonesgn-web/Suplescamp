@@ -15,7 +15,7 @@ export default function Header() {
   };
 
   const handleStartClick = () => {
-    router.push('/auth/register');
+    router.push('/auth/login/register');
   };
 
   const handleLogoClick = () => {
