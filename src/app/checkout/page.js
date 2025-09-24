@@ -1,4 +1,5 @@
 "use client";
+import { Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -30,7 +31,7 @@ const servicios = [
   }
 ];
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [plan, setPlan] = useState(null);
@@ -42,7 +43,8 @@ export default function CheckoutPage() {
     else router.replace("/servicios");
   }, [searchParams, router]);
 
-  if (!plan) return <div className="p-16 text-center">Cargando información del plan...</div>;
+  if (!plan)
+    return <div className="p-16 text-center">Cargando información del plan...</div>;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-green-50 to-blue-100 px-4">
@@ -74,10 +76,12 @@ export default function CheckoutPage() {
               <strong>Banco:</strong> BBVA
             </p>
             <p className="mb-2 text-base">
-              <strong>CLABE</strong> <span className="font-mono text-lg text-blue-700">012700015107211127</span>
+              <strong>CLABE</strong>{" "}
+              <span className="font-mono text-lg text-blue-700">012700015107211127</span>
             </p>
             <p className="mb-2 text-base">
-              <strong>Nombre del titular:</strong> <span className="font-medium text-blue-700">Gerardo Noyola Gonzalez</span>
+              <strong>Nombre del titular:</strong>{" "}
+              <span className="font-medium text-blue-700">Gerardo Noyola Gonzalez</span>
             </p>
             <p className="mb-2 text-base">
               <strong>Concepto:</strong>{" "}
@@ -107,7 +111,9 @@ export default function CheckoutPage() {
 
         <div className="flex flex-col gap-4 pt-4">
           <button
-            onClick={() => {window.open("https://www.bbva.mx/personas/productos/tarjetas-de-debito.html", "_blank")}}
+            onClick={() => {
+              window.open("https://www.bbva.mx/personas/productos/tarjetas-de-debito.html", "_blank")
+            }}
             className="bg-gradient-to-r from-blue-500 to-green-500 py-3 px-6 rounded-xl text-white font-bold text-lg shadow hover:scale-105 transition"
           >
             Abrir BBVA para transferir
@@ -121,5 +127,13 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div className="p-16 text-center">Cargando información del plan...</div>}>
+      <CheckoutContent />
+    </Suspense>
   );
 }
