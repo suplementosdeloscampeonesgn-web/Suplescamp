@@ -1,4 +1,4 @@
-import UserPlanes from '@/components/UserPlanes';
+import UserPlanes from '@/components/admin/UserPlanes';
 
 export default function MyPlanPage() {
   return <UserPlanes />;
