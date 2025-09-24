@@ -1,5 +1,33 @@
+# Node modules and build output
 node_modules/
 dist/
 build/
 .next/
+out/
+
+# Logs
 *.log
+
+# Prisma generated files
+prisma/generated/
+prisma/migrations/
+prisma/dev.db
+prisma/test.db
+
+# Local environment variables
+.env
+.env.local
+.env.production
+.env.development
+.env.*.local
+
+# Vercel deploy folder
+.vercel
+
+# Any local SQLite/Prisma databases in /src/generated
+/src/generated/prisma
+/src/generated/*.db
+
+# OS-specific files
+.DS_Store
+Thumbs.db

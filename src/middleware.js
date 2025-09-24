@@ -1,15 +1,17 @@
-export function middleware(req) {
-  // Cambia el nombre de la cookie a "__Secure-next-auth.session-token" si tu NextAuth está en producción,
-  // o "next-auth.session-token" para desarrollo (verifica en tu navegador).
-  const token = req.cookies.get('next-auth.session-token'); 
+import { NextResponse } from 'next/server';
+import { getToken } from "next-auth/jwt";
 
-  const isProtected = req.nextUrl.pathname.startsWith('/dashboard');
-  if (isProtected && !token) {
-    const url = req.url.replace(req.nextUrl.pathname, '/auth/login');
-    return Response.redirect(url);
+export async function middleware(req) {
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  const isAdminRoute = req.nextUrl.pathname.startsWith('/dashboard/admin');
+  if (isAdminRoute) {
+    if (!token || token.role !== "admin") {
+      return NextResponse.redirect(new URL('/auth/login', req.url));
+    }
   }
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*"]
+  matcher: ["/dashboard/admin/:path*"]
 };

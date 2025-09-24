@@ -1,35 +1,76 @@
 "use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
+//import { useSession } from "next-auth/react";
 
-export default function Login() {
+
+
+export default function LoginPage() {
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   });
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
   const router = useRouter();
+  //const { data: session, status } = useSession();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    
-    // Simulación de login (reemplazar con API después)
-    setTimeout(() => {
-      alert('🎉 Login simulado exitoso! \n\nEn la implementación final conectaremos con MongoDB');
-      router.push('/dashboard');
-      setLoading(false);
-    }, 1500);
-  };
+  // Validar redirección por rol después de login
+ // useEffect(() => {
+   // if (session?.user?.role === "admin") {
+     // router.replace("/mi-perfil");
+    //} else if (session) {
+     // router.replace("/dashboard");
+    //}
+  //}, [session, router]);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
+    if (errors.general) setErrors((prev) => ({ ...prev, general: "" }));
   };
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.email) newErrors.email = "El email es requerido";
+    if (!formData.password) newErrors.password = "La contraseña es requerida";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!validateForm()) return;
+  setLoading(true);
+
+  const res = await signIn("credentials", {
+    redirect: false,
+    email: formData.email,
+    password: formData.password,
+  });
+
+  setLoading(false);
+  
+if (res && res.ok) {
+  localStorage.setItem('userEmail', formData.email); // Guardar email
+  
+  if (formData.email === "suplementosdeloscampeonesgn@gmail.com") {
+    router.replace("/dashboardadmin");
+  } else {
+    router.replace("/dashboard");
+  }
+} else {
+    setErrors({ general: "Usuario o contraseña incorrectos" });
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center py-12 px-4">
@@ -40,15 +81,15 @@ export default function Login() {
               💪 Suplementos De Los Campeones GN
             </h1>
           </div>
-          <h2 className="text-3xl font-bold text-gray-300 mb-8">
-            Iniciar Sesión
-          </h2>
-          <p className="text-gray-400">
-            Accede a tu plan de transformación personalizado
-          </p>
+          <h2 className="text-3xl font-bold text-gray-300 mb-4">Iniciar Sesión</h2>
+          <p className="text-gray-400">Accede a tu panel de cliente</p>
         </div>
-
         <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
+          {errors.general && (
+            <div className="mb-6 bg-red-500/20 border border-red-500 text-red-300 px-4 py-3 rounded-lg">
+              <p className="text-sm">{errors.general}</p>
+            </div>
+          )}
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
@@ -61,11 +102,13 @@ export default function Login() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300"
+                className={`w-full px-4 py-3 rounded-lg bg-white/20 border ${
+                  errors.email ? "border-red-500" : "border-white/30"
+                } text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300`}
                 placeholder="tu@email.com"
               />
+              {errors.email && <p className="mt-1 text-sm text-red-400">{errors.email}</p>}
             </div>
-
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
                 🔒 Contraseña
@@ -77,31 +120,13 @@ export default function Login() {
                 required
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-lg bg-white/20 border border-white/30 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300"
+                className={`w-full px-4 py-3 rounded-lg bg-white/20 border ${
+                  errors.password ? "border-red-500" : "border-white/30"
+                } text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300`}
                 placeholder="••••••••"
               />
+              {errors.password && <p className="mt-1 text-sm text-red-400">{errors.password}</p>}
             </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-300">
-                  Recordarme
-                </label>
-              </div>
-
-              <div className="text-sm">
-                <Link href="/auth/forgot-password" className="text-green-400 hover:text-green-300 transition-colors duration-300">
-                  ¿Olvidaste tu contraseña?
-                </Link>
-              </div>
-            </div>
-
             <button
               type="submit"
               disabled={loading}
@@ -110,50 +135,22 @@ export default function Login() {
               {loading ? (
                 <div className="flex items-center justify-center">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  Iniciando sesión...
+                  Ingresando...
                 </div>
               ) : (
-                '🚀 Iniciar Sesión'
+                "🚀 Ingresar"
               )}
             </button>
           </form>
-
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-600" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-gray-800 text-gray-400">O continúa con</span>
-              </div>
-            </div>
-
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <button 
-                onClick={() => window.open('https://wa.me/524443166595?text=¡Hola! Quiero acceder a mi cuenta', '_blank')}
-                className="w-full inline-flex justify-center py-2 px-4 border border-gray-600 rounded-md shadow-sm bg-white/5 text-sm font-medium text-gray-300 hover:bg-white/10 transition-all duration-300"
-              >
-                📱 WhatsApp
-              </button>
-              <button 
-                onClick={() => alert('📞 Contacto: 4443166595')}
-                className="w-full inline-flex justify-center py-2 px-4 border border-gray-600 rounded-md shadow-sm bg-white/5 text-sm font-medium text-gray-300 hover:bg-white/10 transition-all duration-300"
-              >
-                📞 Teléfono
-              </button>
-            </div>
-          </div>
-
           <div className="mt-6 text-center">
             <p className="text-gray-400">
-              ¿No tienes cuenta?{' '}
-              <Link href="/auth/register" className="text-green-400 hover:text-green-300 font-medium transition-colors duration-300">
+              ¿No tienes cuenta?{" "}
+              <Link href="/auth/login/register" className="text-green-400 hover:text-green-300 font-medium transition-colors duration-300">
                 Regístrate aquí
               </Link>
             </p>
           </div>
         </div>
-
         <div className="text-center">
           <Link 
             href="/"

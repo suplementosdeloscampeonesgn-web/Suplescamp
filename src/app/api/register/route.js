@@ -1,16 +1,15 @@
 import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-import { connectDB } from '@/lib/mongodb';
-import User from '@/models/User';
+
+const prisma = new PrismaClient();
 
 export async function POST(request) {
   try {
     const { name, email, phone, password } = await request.json();
 
-    await connectDB();
-
     // Verificar si el usuario ya existe
-    const existingUser = await User.findOne({ email });
+    const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       return NextResponse.json(
         { message: 'El usuario ya existe' },
@@ -22,18 +21,19 @@ export async function POST(request) {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     // Crear el usuario
-    const user = await User.create({
-      name,
-      email,
-      phone,
-      password: hashedPassword
+    await prisma.user.create({
+      data: {
+        name,
+        email,
+        phone,
+        password: hashedPassword
+      }
     });
 
     return NextResponse.json(
       { message: 'Usuario creado exitosamente' },
       { status: 201 }
     );
-
   } catch (error) {
     console.error('Error:', error);
     return NextResponse.json(

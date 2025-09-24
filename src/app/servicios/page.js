@@ -73,8 +73,7 @@ export default function Servicios() {
   const router = useRouter();
 
   const handleSelectService = (servicioId) => {
-    // Redirigir a página de detalles del servicio o checkout
-    router.push(`/servicios/${servicioId}`);
+    router.push(`/checkout?id=${servicioId}`);
   };
 
   const handleContacto = () => {

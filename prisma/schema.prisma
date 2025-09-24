@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-1.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String      @id @default(uuid())
+  name         String
+  email        String      @unique
+  password     String
+  phone        String?
+  role         String      @default("user")
+  planId       String?
+  planAssignedAt DateTime? // ✅ Nueva fecha de asignación del plan
+  plan         Plan?       @relation(fields: [planId], references: [id])
+  asesorias    Asesoria[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@map("users")
+}
+
+model Plan {
+  id          String   @id @default(uuid())
+  name        String
+  price       Float
+  description String?
+  duration    String?  @default("12 semanas")
+  features    String?  // JSON string con las características
+  isPopular   Boolean  @default(false)
+  type        String?  @default("basic") // basic, premium, complete
+  status      String   @default("activo")
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("planes")
+}
+
+model Asesoria {
+  id        String   @id @default(uuid())
+  title     String
+  tipo      String
+  pdfUrl    String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@map("asesorias")
+}
